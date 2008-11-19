@@ -41,10 +41,10 @@ module DataMapper
           def update_#{arg}
             return if #{arg.to_s.singular}_list.empty?
             deleted_#{arg} = frozen_#{arg.to_s.singular}_list.to_s.split(',') - #{arg.to_s.singular}_list
-            deleted_#{arg}.each do |name|
-              tag = Tag.first(:name => name)
-              tagging = #{arg.to_s.singular}_taggings.first(:tag_id => tag.id)
-              tagging.destroy
+            unless deleted_#{arg}.empty?
+              removed_tags = Tag.all(:name => deleted_#{arg})
+              removed_taggings = #{arg.to_s.singular}_taggings.all(:tag_id => removed_tags.map{|t| t.id})
+              removed_taggings.destroy!
               #{arg.to_s.singular}_taggings.reload
             end
             #{arg.to_s.singular}_list.each do |name|
